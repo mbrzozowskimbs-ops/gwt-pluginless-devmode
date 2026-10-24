@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'">
+  <title>Pluginless DevMode toolbar</title>
+  <link rel="stylesheet" href="toolbar.css">
+</head>
+<body>
+  <button id="back" title="Back" aria-label="Back" disabled>&#x2190;</button>
+  <button id="forward" title="Forward" aria-label="Forward" disabled>&#x2192;</button>
+  <button id="reload" title="Reload" aria-label="Reload">&#x21bb;</button>
+  <form id="address-form">
+    <input id="address" type="text" spellcheck="false" autocomplete="off" aria-label="Address">
+  </form>
+  <button id="devtools" title="Developer Tools" aria-label="Developer Tools">&lt;/&gt;</button>
+  <script src="toolbar.js"></script>
+</body>
+</html>

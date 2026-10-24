@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+        <artifactId>gwt-pluginless-devmode</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>pluginless-devmode-linker</artifactId>
+    <name>pluginless-devmode-linker</name>
+    <description>GWT module and linker that put the Pluginless DevMode bridge client into the DevMode bootstrap script</description>
+
+    <properties>
+        <!-- Node.js tests of devmode-bridge.js on a downloaded Node.js; skip with -Dskip.js.tests=true -->
+        <skip.js.tests>${skipTests}</skip.js.tests>
+        <skipTests>false</skipTests>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.gwtproject</groupId>
+            <artifactId>gwt-dev</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.gwtproject</groupId>
+            <artifactId>gwt-user</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install-node</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skip.js.tests}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bridge-client-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skip.js.tests}</skip>
+                            <executable>${project.build.directory}/node/${node.executable}</executable>
+                            <!-- In-process run (Node >= 22.8) so that gc() from expose-gc reaches the tests -->
+                            <arguments>
+                                <argument>--expose-gc</argument>
+                                <argument>--test-isolation=none</argument>
+                                <argument>--test</argument>
+                                <argument>src/test/js/*.test.cjs</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
