@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.11.0//EN"
+        "http://gwtproject.org/doctype/2.11.0/gwt-module.dtd">
+<!--
+  Plugin-less Classic DevMode. Inherit in the module started with DevMode -nosuperDevMode
+  and open the page with ?gwt.codesvr=127.0.0.1:<Pluginless DevMode bridge port>.
+
+  Redefining "xsiframe" (instead of adding a new linker name) keeps GWT's
+  <when-linker-added name="xsiframe"/> rules working.
+-->
+<module>
+    <inherits name="com.google.gwt.core.Core"/>
+
+    <define-linker name="xsiframe" class="cloud.rubibubi.gwt.pluginless.linker.BridgeLinker"/>
+</module>

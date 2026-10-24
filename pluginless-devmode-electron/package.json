@@ -1,0 +1,14 @@
+{
+  "name": "pluginless-devmode-electron",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Debug browser for Pluginless DevMode: Chromium (Electron) with a synchronous IPC channel to the bridge instead of synchronous XHR",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "45.0.0"
+  }
+}
