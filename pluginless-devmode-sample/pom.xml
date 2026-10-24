@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+        <artifactId>gwt-pluginless-devmode</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>pluginless-devmode-sample</artifactId>
+    <name>pluginless-devmode-sample</name>
+    <description>Minimal GWT module for exercising Classic DevMode through the Pluginless DevMode bridge (PoC stages 2-5)</description>
+
+    <properties>
+        <!-- Only an example to run, nothing to publish -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+            <artifactId>pluginless-devmode-linker</artifactId>
+        </dependency>
+        <!-- PluginlessDevMode: DevMode with the bridge in the same JVM -->
+        <dependency>
+            <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+            <artifactId>pluginless-devmode-bridge</artifactId>
+        </dependency>
+        <!-- Compile scope on purpose: the sample is only ever started through com.google.gwt.dev.DevMode -->
+        <dependency>
+            <groupId>org.gwtproject</groupId>
+            <artifactId>gwt-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gwtproject</groupId>
+            <artifactId>gwt-dev</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <!-- DevMode compiles client code from sources, so they have to be on the classpath -->
+            <resource>
+                <directory>src/main/java</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <!-- mvn -pl pluginless-devmode-sample exec:exec: DevMode with the bridge on :9876 and the Electron debug browser, in a separate JVM because
+                     DevMode needs the add-opens below -->
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Xmx1g</argument>
+                        <!-- CompilingClassLoader reflects on java.lang.Object (DispatchClassInfo) -->
+                        <argument>--add-opens</argument>
+                        <argument>java.base/java.lang=ALL-UNNAMED</argument>
+                        <!-- ...and on JRE classes referenced from JSNI, e.g. LinkedHashMap in the GWT-RPC serializer -->
+                        <argument>--add-opens</argument>
+                        <argument>java.base/java.util=ALL-UNNAMED</argument>
+                        <argument>--add-exports</argument>
+                        <argument>java.desktop/com.apple.eawt=ALL-UNNAMED</argument>
+                        <!-- Opens the startup URL in the debug browser; requires mvn install of pluginless-devmode-electron -->
+                        <argument>-Dpluginless.electron=${project.basedir}/../pluginless-devmode-electron</argument>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                        <argument>cloud.rubibubi.gwt.pluginless.bridge.PluginlessDevMode</argument>
+                        <argument>-nosuperDevMode</argument>
+                        <argument>-logdir</argument>
+                        <argument>${project.build.directory}/devmode-logs</argument>
+                        <argument>-war</argument>
+                        <argument>${project.build.directory}/war</argument>
+                        <argument>-port</argument>
+                        <argument>8888</argument>
+                        <argument>-codeServerPort</argument>
+                        <argument>9997</argument>
+                        <argument>-startupUrl</argument>
+                        <argument>sample/Sample.html</argument>
+                        <argument>cloud.rubibubi.gwt.pluginless.sample.Sample</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

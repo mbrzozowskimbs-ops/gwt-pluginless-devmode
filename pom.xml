@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+    <artifactId>gwt-pluginless-devmode</artifactId>
+    <version>0.1.0</version>
+    <packaging>pom</packaging>
+
+    <name>gwt-pluginless-devmode</name>
+    <description>GWT Classic DevMode without a browser plugin (unofficial, not affiliated with the GWT Project)</description>
+    <url>https://github.com/mbrzozowskimbs-ops/gwt-pluginless-devmode</url>
+
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <modules>
+        <module>pluginless-devmode-bridge</module>
+        <module>pluginless-devmode-linker</module>
+        <module>pluginless-devmode-sample</module>
+        <module>pluginless-devmode-electron</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <gwt.version>2.12.2</gwt.version>
+        <junit.version>5.11.4</junit.version>
+        <assertj.version>3.27.6</assertj.version>
+
+        <!-- Node.js downloaded by frontend-maven-plugin into target/node of the modules that need it -->
+        <node.version>v24.9.0</node.version>
+        <!-- Overridden by the windows profile; the path is target/node/${node.executable} -->
+        <node.executable>node</node.executable>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.gwtproject</groupId>
+                <artifactId>gwt-dev</artifactId>
+                <version>${gwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject</groupId>
+                <artifactId>gwt-user</artifactId>
+                <version>${gwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+                <artifactId>pluginless-devmode-linker</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+                <artifactId>pluginless-devmode-bridge</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.6.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.4.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.googlecode.maven-download-plugin</groupId>
+                    <artifactId>download-maven-plugin</artifactId>
+                    <version>1.9.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>1.15.1</version>
+                    <configuration>
+                        <nodeVersion>${node.version}</nodeVersion>
+                        <installDirectory>${project.build.directory}</installDirectory>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <!-- mvn install -Pelectron-dist: also the Electron builds for all platforms (4 x ~115 MB, downloaded once) -->
+        <profile>
+            <id>electron-dist</id>
+            <modules>
+                <module>pluginless-devmode-electron-dist</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <node.executable>node.exe</node.executable>
+            </properties>
+        </profile>
+    </profiles>
+</project>

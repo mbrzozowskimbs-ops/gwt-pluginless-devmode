@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Sample - Classic DevMode" type="Application" factoryName="Application">
+    <!-- DevMode with the Pluginless DevMode bridge (port 9876) in the same JVM; opens the page in pluginless-devmode-electron -->
+    <option name="MAIN_CLASS_NAME" value="cloud.rubibubi.gwt.pluginless.bridge.PluginlessDevMode" />
+    <module name="pluginless-devmode-sample" />
+    <option name="VM_PARAMETERS" value="-Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-exports java.desktop/com.apple.eawt=ALL-UNNAMED -Dpluginless.electron=$PROJECT_DIR$/pluginless-devmode-electron" />
+    <option name="PROGRAM_PARAMETERS" value="-nosuperDevMode -war target/war -port 8888 -codeServerPort 9997 -startupUrl sample/Sample.html -logdir target/devmode-logs cloud.rubibubi.gwt.pluginless.sample.Sample" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pluginless-devmode-sample" />
+    <!-- DevMode compiles client code from .java files on the classpath; IntelliJ does not copy them to target/classes -->
+    <classpathModifications>
+      <entry path="$PROJECT_DIR$/pluginless-devmode-sample/src/main/java" />
+    </classpathModifications>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
