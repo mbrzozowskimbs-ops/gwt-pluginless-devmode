@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>cloud.rubibubi.gwt.pluginless</groupId>
+        <artifactId>gwt-pluginless-devmode</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>pluginless-devmode-bridge</artifactId>
+    <name>pluginless-devmode-bridge</name>
+    <description>HTTP/JSON to BrowserChannel bridge between the browser and GWT Classic DevMode</description>
+
+    <dependencies>
+        <!-- BrowserChannel protocol classes; the bridge runs next to DevMode, so it needs the same gwt-dev -->
+        <dependency>
+            <groupId>org.gwtproject</groupId>
+            <artifactId>gwt-dev</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <!-- bridge.properties: the gwt-dev version the bridge is built with, for GwtVersionCheck -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+            <!-- The debug browser app, unpacked by ElectronDistribution; ElectronDistribution.APP_FILES lists them -->
+            <resource>
+                <directory>../pluginless-devmode-electron</directory>
+                <targetPath>META-INF/pluginless-devmode/app</targetPath>
+                <includes>
+                    <include>package.json</include>
+                    <include>*.js</include>
+                    <include>*.html</include>
+                    <include>*.css</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>cloud.rubibubi.gwt.pluginless.bridge.BridgeServer</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
