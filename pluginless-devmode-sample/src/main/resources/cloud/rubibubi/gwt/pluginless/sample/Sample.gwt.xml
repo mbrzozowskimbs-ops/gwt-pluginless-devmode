@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.11.0//EN"
+        "http://gwtproject.org/doctype/2.11.0/gwt-module.dtd">
+<module rename-to="sample">
+    <inherits name="com.google.gwt.user.User"/>
+    <inherits name="cloud.rubibubi.gwt.pluginless.PluginlessDevMode"/>
+
+    <entry-point class="cloud.rubibubi.gwt.pluginless.sample.client.SampleEntryPoint"/>
+
+    <source path="client"/>
+</module>

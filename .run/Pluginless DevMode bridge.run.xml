@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Pluginless DevMode bridge" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="cloud.rubibubi.gwt.pluginless.bridge.BridgeServer" />
+    <module name="pluginless-devmode-bridge" />
+    <option name="PROGRAM_PARAMETERS" value="--port 9876 --code-server 127.0.0.1:9997" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
