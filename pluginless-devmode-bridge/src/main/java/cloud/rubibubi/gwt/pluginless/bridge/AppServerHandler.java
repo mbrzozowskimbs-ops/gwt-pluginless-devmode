@@ -120,19 +120,42 @@ final class AppServerHandler implements HttpHandler {
         forward(exchange);
     }
 
-    private void forward(HttpExchange exchange) throws IOException, InterruptedException {
+    /**
+     * Builds the application server URL a request is forwarded to.
+     *
+     * @param appServer  application server base URL; its query and fragment are ignored
+     * @param requestUri URI of the request to the bridge
+     * @return the base URL with the raw path and query of the request appended
+     */
+    static URI forwardTarget(URI appServer, URI requestUri) {
         // Appended, not resolved: resolve() would drop the base path and read a path starting with // as a host
-        URI requestUri = exchange.getRequestURI();
-        URI target = URI.create(appServer + requestUri.getRawPath()
-                + (requestUri.getRawQuery() == null ? "" : "?" + requestUri.getRawQuery()));
+        String basePath = appServer.getRawPath() == null ? "" : appServer.getRawPath();
+        if (basePath.endsWith("/")) {
+            basePath = basePath.substring(0, basePath.length() - 1);
+        }
+        return URI.create(appServer.getScheme() + "://" + appServer.getRawAuthority() + basePath
+                + requestUri.getRawPath() + (requestUri.getRawQuery() == null ? "" : "?" + requestUri.getRawQuery()));
+    }
+
+    private void forward(HttpExchange exchange) throws IOException, InterruptedException {
+        URI target = forwardTarget(appServer, exchange.getRequestURI());
         byte[] body;
         try (InputStream in = exchange.getRequestBody()) {
             body = in.readAllBytes();
         }
-        HttpRequest.Builder request = HttpRequest.newBuilder(target)
-                .method(exchange.getRequestMethod(), body.length == 0
-                        ? HttpRequest.BodyPublishers.noBody()
-                        : HttpRequest.BodyPublishers.ofByteArray(body));
+        HttpRequest.Builder request;
+        try {
+            request = HttpRequest.newBuilder(target)
+                    .method(exchange.getRequestMethod(), body.length == 0
+                            ? HttpRequest.BodyPublishers.noBody()
+                            : HttpRequest.BodyPublishers.ofByteArray(body));
+        } catch (IllegalArgumentException e) {
+            // java.net.http refuses the method, e.g. CONNECT
+            LOG.log(System.Logger.Level.WARNING, "Request not forwarded: " + exchange.getRequestMethod() + " "
+                    + exchange.getRequestURI(), e);
+            HttpResponses.text(exchange, 400, "Request cannot be forwarded to the application server: " + e.getMessage());
+            return;
+        }
         for (Map.Entry<String, List<String>> header : exchange.getRequestHeaders().entrySet()) {
             if (NOT_FORWARDED_REQUEST.contains(header.getKey().toLowerCase(Locale.ROOT))) {
                 continue;
