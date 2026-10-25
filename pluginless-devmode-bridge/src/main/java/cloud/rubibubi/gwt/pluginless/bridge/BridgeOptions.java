@@ -128,6 +128,10 @@ record BridgeOptions(int port, String codeServerHost, int codeServerPort, Origin
         if (!"http".equals(uri.getScheme()) || uri.getHost() == null) {
             throw new IllegalArgumentException("--proxy must be an http:// URL, got " + url);
         }
+        // AppServerHandler.forwardTarget would ignore them; fail instead of dropping them silently
+        if (uri.getRawQuery() != null || uri.getRawFragment() != null) {
+            throw new IllegalArgumentException("--proxy must not have a query or fragment, got " + url);
+        }
         return uri;
     }
 

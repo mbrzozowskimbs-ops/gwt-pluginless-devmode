@@ -2,11 +2,14 @@ package cloud.rubibubi.gwt.pluginless.bridge;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,6 +24,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.sun.net.httpserver.HttpServer;
 
@@ -160,9 +165,46 @@ class AppServerHandlerTest {
         // when
         HttpResponse<String> response = get("////attacker.invalid/x");
 
+        // then: forwarded to the application server or, on JDK updates whose HTTP server refuses a request target
+        // starting with // (e.g. 17.0.20), rejected before it reaches the handler; never sent to the host it names
+        if (response.statusCode() == 400) {
+            assertThat(response.body()).contains("Bad request URI");
+        } else {
+            assertThat(response.statusCode()).isEqualTo(200);
+            assertThat(response.body()).startsWith("app:GET ").contains("attacker.invalid/x");
+        }
+    }
+
+    // A request URI ////host/x has an empty authority and the path //host/x, whatever the JDK HTTP server accepts
+    @ParameterizedTest(name = "{0} + {1} -> {2}")
+    @DisplayName("Should append the request path and query to the application server URL")
+    @CsvSource({
+            "http://127.0.0.1:8080, ////attacker.invalid/x?a=%2F, http://127.0.0.1:8080//attacker.invalid/x?a=%2F",
+            "http://127.0.0.1:8080/base, ////attacker.invalid/x?a=%2F, http://127.0.0.1:8080/base//attacker.invalid/x?a=%2F",
+            "http://127.0.0.1:8080/base, /myapp/x, http://127.0.0.1:8080/base/myapp/x",
+            "http://127.0.0.1:8080/base/?q=1#f, /myapp/x?y=2, http://127.0.0.1:8080/base/myapp/x?y=2"})
+    void shouldAppendRequestToAppServerUrl(String appServerUrl, String requestUri, String expected) {
+        // when
+        URI target = AppServerHandler.forwardTarget(URI.create(appServerUrl), URI.create(requestUri));
+
         // then
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).startsWith("app:GET ").contains("attacker.invalid/x");
+        assertThat(target.getHost()).isEqualTo("127.0.0.1");
+        assertThat(target).hasToString(expected);
+    }
+
+    @Test
+    @DisplayName("Should answer 400 for a request java.net.http cannot forward")
+    void shouldRejectUnforwardableRequest() throws Exception {
+        try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), bridge.port())) {
+            // when: CONNECT, which HttpRequest.Builder refuses
+            socket.getOutputStream().write("CONNECT /myapp/x HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+                    .getBytes(StandardCharsets.US_ASCII));
+            String statusLine = new BufferedReader(new InputStreamReader(socket.getInputStream(),
+                    StandardCharsets.US_ASCII)).readLine();
+
+            // then
+            assertThat(statusLine).startsWith("HTTP/1.1 400");
+        }
     }
 
     @Test
