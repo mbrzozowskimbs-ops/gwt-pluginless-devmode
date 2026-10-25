@@ -1,0 +1,43 @@
+# Full Maven build with the Java (JUnit) and JS (node --test) tests. Release branches (release/x.y.z) are built on push,
+# before their pull request to main is opened.
+name: Build
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main, 'release/**']
+
+permissions:
+  contents: read
+
+# A new push to a pull request cancels its running build; pushes to develop, main and release/** each keep their build
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Node.js comes from frontend-maven-plugin (target/node). Electron is skipped: its module only runs npm install
+      # (a ~100 MB Chromium download) and has no tests; the bridge jar packages the app files, not node_modules.
+      - name: Build and test
+        run: mvn -B verify -Dskip.electron=true
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: '**/target/surefire-reports/'
+          if-no-files-found: ignore

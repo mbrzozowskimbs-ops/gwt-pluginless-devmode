@@ -103,4 +103,13 @@ class BridgeOptionsTest {
         assertThatThrownBy(() -> BridgeOptions.parse("--code-server", "9997"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    @DisplayName("Should reject an application server URL with a query or fragment")
+    void shouldRejectProxyWithQueryOrFragment() {
+        assertThatThrownBy(() -> BridgeOptions.parse("--proxy", "http://localhost:8080/app?tenant=a"))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("query or fragment");
+        assertThatThrownBy(() -> BridgeOptions.parse("--proxy", "http://localhost:8080/app#top"))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("query or fragment");
+    }
 }
